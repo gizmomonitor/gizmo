@@ -1,0 +1,9 @@
+{application, session_counter,
+ [
+  {description, "Keeps count of active user sessions for each application"},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [kernel, stdlib, utils]},
+  {mod, { session_counter_app, []}},
+  {env, []}
+ ]}.
