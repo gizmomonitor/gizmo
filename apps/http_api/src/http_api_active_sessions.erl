@@ -8,7 +8,7 @@
 %% INCLUDE
 %% ###############################################################
 
--include_lib("utils/include/logger.hrl").
+-include_lib("gizmo_backend_utils/include/logger.hrl").
 -include_lib("webmachine/include/webmachine.hrl").
 
 %% ###############################################################

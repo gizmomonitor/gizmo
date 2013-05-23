@@ -7,7 +7,7 @@
 %% INCLUDE
 %% ###############################################################
 
--include_lib("utils/include/types.hrl").
+-include_lib("gizmo_backend_utils/include/types.hrl").
 
 %% ###############################################################
 %% MACROS
@@ -22,7 +22,7 @@
 %% @doc Saves session count at given timestamp for given application
 -spec save(binary(), binary(), integer()) -> ok.
 save(Key, Timestamp, Count) ->
-    utils:db_execute(fun(Connection) ->
+    gizmo_backend_utils:db_execute(fun(Connection) ->
         Obj = riakc_obj:new(?BUCKET(Key), Timestamp, Count),
         riakc_pb_socket:put(Connection, Obj)
     end, monitoring).
@@ -31,7 +31,7 @@ save(Key, Timestamp, Count) ->
 -spec read(binary(), integer(), integer()) -> {ok, list()}.
 read(Key, Start, End) ->
     Map = {map, {qfun, fun(O,_,_) -> map(O, Start, End) end}, none, true},
-    utils:db_execute(fun(Connection) ->
+    gizmo_backend_utils:db_execute(fun(Connection) ->
         riakc_pb_socket:mapred_bucket(Connection, ?BUCKET(Key),[Map])
     end, stats, fun result/1).
 

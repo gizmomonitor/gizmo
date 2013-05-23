@@ -3,7 +3,7 @@
 
 -export([add/2, active_sessions/3]).
 
--include_lib("utils/include/types.hrl").
+-include_lib("gizmo_backend_utils/include/types.hrl").
 
 %% ###############################################################
 %% API

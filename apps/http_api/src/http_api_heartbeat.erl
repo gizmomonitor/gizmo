@@ -8,7 +8,7 @@
 %% INCLUDE
 %% ###############################################################
 
--include_lib("utils/include/logger.hrl").
+-include_lib("gizmo_backend_utils/include/logger.hrl").
 -include_lib("webmachine/include/webmachine.hrl").
 
 %% ###############################################################
@@ -39,7 +39,8 @@ check_path(ReqData) ->
 process_post(ReqData, State) ->
     Key = dict:fetch(application, wrq:path_info(ReqData)),
     Device = wrq:get_qs_value("device_id", ReqData),
-    case session_server_api:heartbeat(Key, Device) of
+    Timeout = wrq:get_qs_value("timeout", ReqData),
+    case session_server_api:heartbeat(Key, Device, Timeout) of
         ok ->
             {true, ReqData, State};
         {error, application_not_found} ->

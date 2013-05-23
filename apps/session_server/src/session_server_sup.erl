@@ -3,7 +3,7 @@
 
 -behaviour(supervisor).
 
--export([init/1, start_link/0, start_child/2]).
+-export([init/1, start_link/0, start_child/3]).
 
 %% ###############################################################
 %% MACROS
@@ -18,8 +18,8 @@
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
-start_child(ApplicationKey, Token) ->
-    supervisor:start_child(?MODULE, [ApplicationKey, Token]).
+start_child(ApplicationKey, DeviceId, Timeout) ->
+    supervisor:start_child(?MODULE, [ApplicationKey, DeviceId, Timeout]).
 
 %% ###############################################################
 %% SUPERVISOR CALLBACKS

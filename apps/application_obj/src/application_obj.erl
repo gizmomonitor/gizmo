@@ -16,7 +16,7 @@
 %% @doc Creates new application
 -spec create(term()) -> binary().
 create(Application) ->
-    utils:db_execute(fun(Connection) ->
+    gizmo_backend_utils:db_execute(fun(Connection) ->
         Key = list_to_binary(uuid:to_string(uuid:uuid4())),
         App = riakc_obj:new(?BUCKET, Key, Application),
         case riakc_pb_socket:put(Connection, App, [return_head]) of
@@ -32,7 +32,7 @@ create(Application) ->
 exists(Key) when is_list(Key) ->
     exists(list_to_binary(Key));
 exists(Key) when is_binary(Key) ->
-    utils:db_execute(fun(Connection) ->
+    gizmo_backend_utils:db_execute(fun(Connection) ->
         case read(Key, Connection) of
             {ok, _} ->
                 true;

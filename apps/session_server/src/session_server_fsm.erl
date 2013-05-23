@@ -3,14 +3,15 @@
 
 -behaviour(gen_fsm).
 
--export([start_link/2]).
--export([init/1, 'STARTED'/2, 'ACTIVE'/2, handle_event/3, handle_info/3, handle_sync_event/4, terminate/3, code_change/4]).
+-export([start_link/3]).
+-export([init/1, 'ACTIVE'/2, handle_event/3, handle_info/3,
+    handle_sync_event/4, terminate/3, code_change/4]).
 
 %% ###############################################################
 %% MACROS
 %% ###############################################################
 
--include_lib("utils/include/logger.hrl").
+-include_lib("gizmo_backend_utils/include/logger.hrl").
 
 %% ###############################################################
 %% STATE
@@ -22,28 +23,27 @@
 %% API
 %% ###############################################################
 
-start_link(ApplicationKey, DeviceId) ->
-    gen_fsm:start_link({local, DeviceId}, ?MODULE, [ApplicationKey, DeviceId], []).
+start_link(ApplicationKey, DeviceId, Timeout) ->
+    gen_fsm:start_link({local, DeviceId}, ?MODULE,
+        [ApplicationKey, DeviceId, Timeout], []).
 
 %% ###############################################################
 %% GEN_FSM CALLBACKS
 %% ###############################################################
 
-init([ApplicationKey, DeviceId]) ->
+init([ApplicationKey, DeviceId, undefined]) ->
     {ok, App} = application:get_application(?MODULE),
     {ok, Timeout} = application:get_env(App, timeout),
+    init([ApplicationKey, DeviceId, Timeout]);
+
+init([ApplicationKey, DeviceId, Timeout]) when is_integer(Timeout) ->
     session_counter_api:add(ApplicationKey, self()),
-    {ok, 'STARTED', #state{id = DeviceId, key = ApplicationKey,
+    {ok, 'ACTIVE', #state{id = DeviceId, key = ApplicationKey,
         start_time = erlang:now(), timeout = Timeout}, Timeout}.
 
-'STARTED'(heartbeat, #state{timeout=Timeout} = State) ->
-    {next_state, 'ACTIVE', State, Timeout};
-'STARTED'(timeout, State) ->
-    {stop, normal, State#state{reason = timeout}};
-'STARTED'(stop, State) ->
-    {stop, normal, State#state{reason = normal}}.
-
-'ACTIVE'(heartbeat, #state{timeout=Timeout} = State) ->
+'ACTIVE'({heartbeat, Timeout}, State) when is_integer(Timeout) ->
+    {next_state, 'ACTIVE', State#state{timeout = Timeout}, Timeout};
+'ACTIVE'({heartbeat, _}, #state{timeout = Timeout} = State) ->
     {next_state, 'ACTIVE', State, Timeout};
 'ACTIVE'(timeout, State) ->
     {stop, normal, State#state{reason = timeout}};
