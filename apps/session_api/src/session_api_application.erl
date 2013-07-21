@@ -1,45 +1,46 @@
--module(http_api_application).
+%%% @doc Application resource
+
+-module(session_api_application).
 -author('mkorszun@gmail.com').
 
--export([init/1, allowed_methods/2, content_types_provided/2]).
--export([process_post/2]).
+-export([init/3, allowed_methods/2, content_types_accepted/2]).
+-export([resource_info/0]).
+-export([from_json/2 ]).
 
 %% ###############################################################
 %% INCLUDE
 %% ###############################################################
 
 -include_lib("gizmo_backend_utils/include/logger.hrl").
--include_lib("webmachine/include/webmachine.hrl").
 
 %% ###############################################################
 %% CONTROL
 %% ###############################################################
 
-init([]) ->
-    {ok, []}.
+init(_Transport, _Req, []) ->
+    {upgrade, protocol, cowboy_rest}.
 
-allowed_methods(ReqData, Context) ->
-    {['POST'], ReqData, Context}.
+allowed_methods(Req, State) ->
+    {[<<"POST">>], Req, State}.
 
-content_types_provided(ReqData, Context) ->
-   {[{"application/json", to_json}], ReqData, Context}.
+content_types_accepted(Req, State) ->
+    {[{{<<"application">>, <<"json">>, []}, from_json}], Req, State}.
+
+resource_info() ->
+    {"/application", [], ?MODULE, []}.
 
 %% ###############################################################
 %% RESOURCE
 %% ###############################################################
 
-%% ###############################################################
-%% READ
-%% ###############################################################
-
-process_post(ReqData, State) ->
-    case application_obj:create([]) of
+from_json(ReqData, State) ->
+    case application_manager:create([]) of
         {ok, Key} ->
             Body = mochijson2:encode({struct, [{key, Key}]}),
-            {true, wrq:set_resp_body(Body, ReqData), State};
+            {true, session_api_utils:to_json(Body, ReqData), State};
         {error, Reason} ->
             ?ERR("Application key generation failed: ~p", [Reason]),
-            http_api_error:error(internal_error, 500, ReqData, State)
+            {halt, session_api_utils:to_error(internal_error, 500, ReqData), State}
     end.
 
 %% ###############################################################

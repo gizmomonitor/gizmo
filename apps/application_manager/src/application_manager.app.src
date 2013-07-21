@@ -1,4 +1,4 @@
-{application, application_obj,
+{application, application_manager,
  [
   {description, ""},
   {vsn, "1"},

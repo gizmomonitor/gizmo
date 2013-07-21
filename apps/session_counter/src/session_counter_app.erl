@@ -1,3 +1,5 @@
+%%% @doc Session counter application
+
 -module(session_counter_app).
 -author('mkorszun@gmail.com').
 

@@ -1,9 +1,11 @@
+%%% @doc Session counter process supervisor
+
 -module(session_counter_sup).
 -author('mkorszun@gmail.com').
 
 -behaviour(supervisor).
 
--export([init/1, start_link/0]).
+-export([init/1, start_link/0, start_child/2]).
 
 %% ###############################################################
 %% MACROS
@@ -17,6 +19,13 @@
 
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+
+start_child(ProcessName, Key) ->
+    case supervisor:start_child(?MODULE, [ProcessName, Key]) of
+        {ok, _Pid} -> {ok, running};
+        {error, {already_started, _}} -> {ok, running};
+        {error, Error} -> {error, Error}
+    end.
 
 %% ###############################################################
 %% SUPERVISOR CALLBACKS

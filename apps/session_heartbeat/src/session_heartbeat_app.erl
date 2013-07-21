@@ -1,4 +1,6 @@
--module(session_server_app).
+%%% @doc Session heartbeat application
+
+-module(session_heartbeat_app).
 -author('mkorszun@gmail.com').
 
 -behaviour(application).
@@ -10,7 +12,7 @@
 %% ###############################################################
 
 start(_StartType, _StartArgs) ->
-    session_server_sup:start_link().
+    session_heartbeat_sup:start_link().
 
 stop(_State) ->
     ok.

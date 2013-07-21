@@ -25,3 +25,4 @@ dialyzer.plt
 .project
 .settings
 tests
+deps/*/Makefile

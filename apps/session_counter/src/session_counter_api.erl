@@ -1,44 +1,29 @@
+%%% @doc Active session history API
+
 -module(session_counter_api).
 -author('mkorszun@gmail.com').
 
--export([add/2, active_sessions/3]).
+-export([active_sessions/4]).
 
--include_lib("gizmo_backend_utils/include/types.hrl").
+%% ###############################################################
+%% Types
+%% ###############################################################
+
+-type session_state() :: all_states | all | term().
+-type active_sessions() :: integer() | list().
+-type sw() :: integer() | undefined.
+-type ew() :: integer() | undefined.
 
 %% ###############################################################
 %% API
 %% ###############################################################
 
-%% @doc Updates session counter for given application
--spec add(string(), pid()) -> ok.
-add(Key, SessionProcess) ->
-    supervisor:start_child(session_counter_sup, [Key]),
-    gen_server:cast(?L2A(Key), {add, SessionProcess}).
-
 %% @doc Returns list of active sessions in given time period
--spec active_sessions(string(), integer() | undefined, integer() | undefined) ->
-    {ok, integer()} | {ok, list()} | {error, term()}.
-active_sessions(Key, Start, End) when is_integer(Start), is_integer(End) ->
-    case application_obj:exists(Key) of
-        true ->
-            session_counter_stats:read(?L2B(Key), Start, End);
-        false ->
-            {error, application_not_found}
-    end;
-
-%% @doc Returns list of current active sessions
-active_sessions(Key, _, _) ->
-    case application_obj:exists(Key) of
-        true ->
-            try gen_server:call(?L2A(Key), get_counter) of
-                Res -> {ok, Res}
-            catch
-                exit:{noproc, _} -> {ok, 0};
-                _:Reason -> {error, Reason}
-            end;
-        false ->
-            {error, application_not_found}
-    end.
+-spec active_sessions(binary(), session_state(), sw(), ew()) -> {ok, active_sessions()} | {error, term()}.
+active_sessions(Key, SessionState, Start, End) when is_integer(Start), is_integer(End) ->
+    session_counter_stats:read(Key, SessionState, Start, End);
+active_sessions(Key, SessionState, undefined, undefined) ->
+    session_counter_gen:active_sessions(Key, SessionState).
 
 %% ###############################################################
 %% ###############################################################

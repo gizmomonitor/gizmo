@@ -1,8 +1,12 @@
 .PHONY:
 
 all:
-	./rebar get-deps compile
+	make clean
+	make compile
 	make update_riak_code
+
+compile:
+	./rebar get-deps compile
 
 clean:
 	./rebar clean
@@ -21,12 +25,19 @@ clean:
 	find . -name "#*#" -exec rm {} \;
 
 release:
-	make clean
-	make
-	./rebar generate overlay_vars=${NODE}.config  
+	make all
+	./rebar generate overlay_vars=${NODE}.config
 
 test:
-	ct_run -pa apps/*/ebin -pa deps/*/ebin -dir apps/*/test/ -logdir tests 
+	make compile
+	ct_run -pa apps/*/ebin -pa deps/*/ebin -dir apps/*/test/ -logdir tests -cover cover.spec
 
 update_riak_code:
 	riak-admin erl_reload
+
+dialyzer:
+	dialyzer --output_plt .deps_plt --build_plt --apps erts kernel stdlib -r deps
+	dialyzer --fullpath --plt .deps_plt -Wrace_conditions -r ./apps/*/ebin
+
+typer:
+	typer --plt .deps_plt -r deps/*/src deps/*/include ./apps/*/src
