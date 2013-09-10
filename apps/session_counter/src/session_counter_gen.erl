@@ -41,13 +41,14 @@ update(Key, OldSessionState, NewSessionState) ->
     gen_server:cast(?B2A(Key), {state_change, OldSessionState, NewSessionState}).
 
 %% @doc Returns list of current active sessions
--spec active_sessions(binary(), term()) -> ok.
+-spec active_sessions(binary(), term()) -> ok | {error, term()}.
 active_sessions(Key, SessionState) ->
     try gen_server:call(?B2A(Key), {get_counter, SessionState}) of
         Res -> {ok, Res}
     catch
         exit:{noproc, _} -> {ok, 0};
-        exit:{normal, _} -> {ok, 0}
+        exit:{normal, _} -> {ok, 0};
+        _:Reason -> {error, Reason}
     end.
 
 %% ###############################################################

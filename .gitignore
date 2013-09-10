@@ -26,3 +26,4 @@ dialyzer.plt
 .settings
 tests
 deps/*/Makefile
+.deps_plt

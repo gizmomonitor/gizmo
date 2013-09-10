@@ -36,7 +36,7 @@ update_riak_code:
 	riak-admin erl_reload
 
 dialyzer:
-	dialyzer --output_plt .deps_plt --build_plt --apps erts kernel stdlib -r deps
+	dialyzer --output_plt .deps_plt --build_plt --apps erts kernel stdlib
 	dialyzer --fullpath --plt .deps_plt -Wrace_conditions -r ./apps/*/ebin
 
 typer:

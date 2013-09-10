@@ -8,7 +8,7 @@
 %% CT CALLBACKS
 %% ###############################################################
 
-all() -> [test_heartbeat_ok, test_heartbeat_app_not_found, test_heartbeat_error].
+all() -> [test_heartbeat_ok, test_heartbeat_app_not_found].
 
 init_per_suite(Config) ->
     ok = application:start(ranch),
@@ -38,7 +38,7 @@ test_heartbeat_ok(_) ->
     meck:expect(application_manager, exists, fun(_) -> true end),
     meck:new(session_heartbeat_fsm),
     meck:expect(session_heartbeat_fsm, heartbeat, fun(_,_,_,_) -> ok end),
-    {ok, {{"HTTP/1.1", 204, "No Content"}, Header, Body}} = httpc:request("http://127.0.0.1:8888/application/key/device/1234/heartbeat?timeout=1000"),
+    {ok, {{"HTTP/1.1", 204, "No Content"}, _Header, _Body}} = httpc:request("http://127.0.0.1:8888/application/key/device/1234/heartbeat?timeout=1000"),
     [{_, {application_manager, exists, [<<"key">>]}, true}] = meck:history(application_manager),
     [{_, {session_heartbeat_fsm, heartbeat, [<<"key">>, device1234, 1000, undefined]}, ok}] = meck:history(session_heartbeat_fsm),
     true = meck:validate(application_manager),
@@ -55,21 +55,6 @@ test_heartbeat_app_not_found(_) ->
     [{_, {application_manager, exists, [<<"key">>]}, false}] = meck:history(application_manager),
     true = meck:validate(application_manager),
     meck:unload(application_manager).
-
-test_heartbeat_error(_) ->
-    meck:new(application_manager),
-    meck:expect(application_manager, exists, fun(_) -> true end),
-    meck:new(session_heartbeat_fsm),
-    meck:expect(session_heartbeat_fsm, heartbeat, fun(_,_,_,_) -> {error, reason} end),
-    {ok, {{"HTTP/1.1", 500, "Internal Server Error"}, Header, Body}} = httpc:request("http://127.0.0.1:8888/application/key/device/1234/heartbeat?timeout=1000"),
-    "application/json" = proplists:get_value("content-type", Header),
-    {struct, [{<<"error">>, <<"internal_error">>}]} = mochijson2:decode(Body),
-    [{_, {application_manager, exists, [<<"key">>]}, true}] = meck:history(application_manager),
-    [{_, {session_heartbeat_fsm, heartbeat, [<<"key">>, device1234, 1000, undefined]}, {error, reason}}] = meck:history(session_heartbeat_fsm),
-    true = meck:validate(application_manager),
-    true = meck:validate(session_heartbeat_fsm),
-    meck:unload(application_manager),
-    meck:unload(session_heartbeat_fsm).
 
 %% ###############################################################
 %% ###############################################################
