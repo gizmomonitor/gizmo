@@ -1,4 +1,7 @@
-language:
-    erlang
+language: erlang
+script: "make compile && make test"
+notifications:
+  recipients:
+    - gizmomonitor@gmail.com
 otp_release:
-    R15B03
+  - R15B03
