@@ -16,7 +16,7 @@
 %% ###############################################################
 
 %% @doc Saves session count at given timestamp for given application
--spec save(binary(), binary(), integer()) -> ok.
+-spec save(binary(), binary(), list()) -> ok.
 save(Key, Timestamp, Count) ->
     gizmo_backend_utils:db_execute(
         fun(Connection) ->

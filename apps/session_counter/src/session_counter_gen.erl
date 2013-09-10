@@ -41,13 +41,14 @@ update(Key, OldSessionState, NewSessionState) ->
     gen_server:cast(?B2A(Key), {state_change, OldSessionState, NewSessionState}).
 
 %% @doc Returns list of current active sessions
--spec active_sessions(binary(), term()) -> ok.
+-spec active_sessions(binary(), term()) -> ok | {error, term()}.
 active_sessions(Key, SessionState) ->
     try gen_server:call(?B2A(Key), {get_counter, SessionState}) of
         Res -> {ok, Res}
     catch
         exit:{noproc, _} -> {ok, 0};
-        exit:{normal, _} -> {ok, 0}
+        exit:{normal, _} -> {ok, 0};
+        _:Reason -> {error, Reason}
     end.
 
 %% ###############################################################
@@ -55,9 +56,11 @@ active_sessions(Key, SessionState) ->
 %% ###############################################################
 
 init([Key]) ->
-    timer:send_after(5000, self(), update_stats),
+    {ok, App} = application:get_application(?MODULE),
+    {ok, Freq} = application:get_env(App, update_frequency),
+    timer:send_after(Freq, self(), update_stats),
     process_flag(trap_exit, true),
-    {ok, #state{key = Key, freq = 5000}}.
+    {ok, #state{key = Key, freq = Freq}}.
 
 %% Get device session state counters
 handle_call({get_counter, DeviceState}, _From, #state{device_state_counter = DeviceStates} = State) ->

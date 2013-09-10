@@ -6,7 +6,7 @@
 -behaviour(gen_fsm).
 
 -export([start_link/4, heartbeat/4, device_info/1]).
--export([init/1, 'ACTIVE'/2, handle_sync_event/4, terminate/3, code_change/4]).
+-export([init/1, 'ACTIVE'/2, handle_sync_event/4, terminate/3, code_change/4, handle_event/3, handle_info/3]).
 
 %% ###############################################################
 %% MACROS
@@ -78,6 +78,12 @@ handle_sync_event(device_info, _, StateName, StateData) ->
 %% Device session terminating - include state in shutdown reason
 'ACTIVE'(timeout, #state{device_state = S} = State) ->
     {stop, {shutdown, {state, S}}, State#state{reason = timeout}}.
+
+handle_info(_Info, StateName, State) ->
+    {next_state, StateName, State}.
+
+handle_event(_Event, StateName, State) ->
+    {next_state, StateName, State}.
 
 %% Update state count
 terminate(_, StateName, #state{id = Id, key = Key, start_time = Start, reason = Reason}) ->
