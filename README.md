@@ -2,3 +2,5 @@
 
 Gizmo
 =====
+
+* [HTTP API](apps/session_api/README.md)
