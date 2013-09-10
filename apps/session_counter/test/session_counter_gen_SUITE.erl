@@ -21,6 +21,7 @@ all() -> [
 init_per_suite(Config) ->
     ok = application:start(session_counter),
     ok = application:start(meck),
+    application:set_env(session_counter, update_frequency, 50000),
     Config.
 
 end_per_suite(_) ->
